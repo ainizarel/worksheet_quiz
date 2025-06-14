@@ -1,10 +1,10 @@
-// src/lib/api.ts
 import supabase from './supabase'; // Ensure you have a supabase instance exported here
 
 const baseURL = import.meta.env.DEV
   ? ''
   : 'https://worksheet-app.vercel.app';
 
+// Function to submit score
 export async function submitScore(payload: {
   name: string;
   worksheetId: string;
@@ -32,13 +32,14 @@ export async function submitScore(payload: {
   return responseBody;
 }
 
+// Function to fetch leaderboard data
 export async function fetchLeaderboardData(worksheetId: string) {
   const { data, error } = await supabase
     .from('scores')  // Ensure you're targeting the correct table
     .select('name, score')
     .eq('worksheet_id', worksheetId)  // Filter by the specific worksheet
     .order('score', { ascending: false });  // Sort scores in descending order
-  
+
   if (error) {
     throw new Error('Error fetching leaderboard data');
   }
