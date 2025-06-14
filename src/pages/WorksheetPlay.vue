@@ -36,7 +36,8 @@
             class="option"
             :class="{
               'option-selected': selectedAnswers[i] === opt[0], 
-              'option-hover': !selectedAnswers[i]
+              'option-correct': submitted && selectedAnswers[i] === q.answer, 
+              'option-wrong': submitted && selectedAnswers[i] !== q.answer && selectedAnswers[i] !== null
             }"
             @click="selectedAnswers[i] = opt[0]"
           >
@@ -49,7 +50,6 @@
               :disabled="submitted"
               hidden
             />
-            <!-- Option Label with Hover Effect -->
             <span :class="{
               'selected-option': selectedAnswers[i] === opt[0],
               'hover-option': !selectedAnswers[i] && !submitted
@@ -95,8 +95,8 @@ const name = ref('')
 const studentId = ref('');
 const submitted = ref(false)
 const score = ref<number | null>(null)
-const selectedAnswers = ref<(string | null)[]>([])
-const questions = ref<any[]>([])
+const selectedAnswers = ref<(string | null)[]>([])  // Correct answer options stored here
+const questions = ref<any[]>([])  // Questions data
 const copyright = ref<string | null>(null)
 const loading = ref(true)
 
@@ -117,7 +117,7 @@ const fetchQuestions = async () => {
 
   questions.value = data.questions
   authorizedStudentIds.value = data.authorized_students || []
-  selectedAnswers.value = Array(data.questions.length).fill(null)
+  selectedAnswers.value = Array(data.questions.length).fill(null)  // Ensure answers array length matches questions
   copyright.value = data.copyright || null
   loading.value = false
 }
@@ -189,6 +189,7 @@ const submit = async () => {
 
 onMounted(fetchQuestions)
 </script>
+
 <style scoped>
 /* Container styles */
 .container {
@@ -262,6 +263,20 @@ onMounted(fetchQuestions)
 /* Hover effect */
 .option:hover {
   background-color: #f0f0f0; /* Light hover effect */
+}
+
+/* Correct answer styles */
+.option-correct {
+  background-color: #38a169; /* Green for correct answers */
+  color: white;
+  font-weight: bold;
+}
+
+/* Wrong answer styles */
+.option-wrong {
+  background-color: #e53e3e; /* Red for incorrect answers */
+  color: white;
+  font-weight: bold;
 }
 
 /* Selected option background */
