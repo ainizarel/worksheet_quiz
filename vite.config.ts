@@ -23,10 +23,5 @@ export default defineConfig(({ mode }) => {
         },
       },
     },
-    build: {
-      rollupOptions: {
-        external: ['primevue/resources/themes/lara-light-blue/theme.css', 'primevue/resources/primevue.min.css'], // Adjust for external assets
-      },
-    },
   };
 });
