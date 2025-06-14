@@ -3,30 +3,30 @@ const baseURL = import.meta.env.DEV
   ? ''
   : 'https://worksheet-app.vercel.app';
 
-export async function submitScore(payload: {
-  name: string;
-  worksheetId: string;
-  score: number;
-  studentId: string;
-}) {
-  const response = await fetch(`${baseURL}/api/submit-score`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(payload)
-  });
-
-  if (!response.ok) {
+  export async function submitScore(payload: {
+    name: string;
+    worksheetId: string;
+    score: number;
+    studentId: string;
+  }) {
+    const response = await fetch(`${baseURL}/api/submit-score`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+  
+    let responseBody;
+  
     try {
-      const error = await response.json();
-      throw new Error(error?.error || 'Unknown error');
-    } catch {
-      throw new Error('Unexpected error');
+      responseBody = await response.json();
+    } catch (err) {
+      throw new Error('⚠️ Server error: Invalid response from server.');
     }
+  
+    if (!response.ok) {
+      throw new Error(responseBody?.error || '⚠️ Unknown submission error.');
+    }
+  
+    return responseBody;
   }
-
-  try {
-    return await response.json();
-  } catch {
-    return { success: true }; // fallback if backend doesn't return body
-  }
-}
+  

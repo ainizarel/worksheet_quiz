@@ -8,8 +8,13 @@ import 'primevue/resources/themes/lara-light-blue/theme.css' // ✅ Theme
 import 'primevue/resources/primevue.min.css'                 // ✅ Core styles
 import 'primeicons/primeicons.css'                           // ✅ Icons
 import 'primeflex/primeflex.css'                             // ✅ Utility CSS
+import ToastService from 'primevue/toastservice';
+import Toast from 'primevue/toast';
 
-const app = createApp(App)
+const app = createApp(App);
+
+app.use(ToastService);
+app.component('Toast', Toast);
 app.use(router)
 app.use(PrimeVue)
 

@@ -2,6 +2,7 @@
 <template>
   <div>
     <router-view />
+    <Toast />
   </div>
 </template>
 

@@ -3,6 +3,9 @@ import { ref, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
 import { submitScore } from '@/lib/api'
 import supabase from '@/lib/supabase'
+import { useToast } from 'primevue/usetoast'
+
+const toast = useToast()
 
 const route = useRoute()
 const worksheetId = route.params.id as string
@@ -47,7 +50,12 @@ const reset = () => {
 
 const submit = async () => {
   if (!name.value.trim()) {
-    alert('Please enter your name');
+    toast.add({
+      severity: 'warn',
+      summary: 'Missing Name',
+      detail: 'Please enter your name',
+      life: 3000,
+    });
     return;
   }
 
@@ -56,7 +64,12 @@ const submit = async () => {
     .filter(idx => idx !== null);
 
   if (unanswered.length > 0) {
-    alert(`Please answer all questions before submitting.\nUnanswered: ${unanswered.join(', ')}`);
+    toast.add({
+      severity: 'warn',
+      summary: 'Incomplete Answers',
+      detail: `Please answer all questions. Unanswered: ${unanswered.join(', ')}`,
+      life: 5000,
+    });
     return;
   }
 
@@ -75,12 +88,24 @@ const submit = async () => {
     submitted.value = true;
     score.value = correct;
 
+    toast.add({
+      severity: 'success',
+      summary: 'Submitted',
+      detail: `You scored ${correct} / ${questions.value.length}`,
+      life: 4000,
+    });
+
   } catch (err: any) {
-    // Show the actual error message returned from the backend
-    alert(`❌ Submission failed: ${err.message}`);
+    toast.add({
+      severity: 'error',
+      summary: 'Submission Failed',
+      detail: err.message || 'Unexpected error occurred',
+      life: 5000,
+    });
     console.error('Submit failed:', err.message);
   }
 };
+
 
 
 onMounted(fetchQuestions)
