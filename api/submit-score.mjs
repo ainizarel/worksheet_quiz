@@ -8,45 +8,37 @@ const supabase = createClient(
 export default async function handler(req, res) {
   console.log('Incoming request method:', req.method)
 
-  if (req.method === 'GET') {
-    const { data, error } = await supabase
-      .from('scores')
-      .select('*')
-      .order('created_at', { ascending: false })
-
-    if (error) {
-      console.error('GET error:', error.message)
-      return res.status(500).json({ error: error.message })
-    }
-
-    return res.status(200).json(data)
-  }
-
   if (req.method === 'POST') {
-    const { name, worksheetId, score, studentId } = req.body
+    const { name, worksheetId, studentId, score } = req.body
 
     if (!name || !worksheetId || !studentId || score === undefined) {
       return res.status(400).json({ error: 'Missing fields' })
     }
 
-    // 🔒 1. Check if student is authorized
-    const { data: authorized, error: authError } = await supabase
-      .from('authorized_ids')
-      .select('*')
+    // 🔒 Step 1: Get authorized students from worksheets table
+    const { data: worksheet, error: worksheetError } = await supabase
+      .from('worksheets')
+      .select('authorized_students')
       .eq('worksheet_id', worksheetId)
-      .eq('student_id', studentId)
       .maybeSingle()
 
-    if (authError) {
-      console.error('Auth check error:', authError.message)
-      return res.status(500).json({ error: authError.message })
+    if (worksheetError) {
+      console.error('Worksheet fetch error:', worksheetError.message)
+      return res.status(500).json({ error: worksheetError.message })
     }
 
-    if (!authorized) {
-      return res.status(403).json({ error: 'Not authorized to access this worksheet.' })
+    if (!worksheet) {
+      return res.status(404).json({ error: 'Worksheet not found' })
     }
 
-    // 🔒 2. Check if already submitted
+    // 🔒 Step 2: Check if student is authorized
+    if (!worksheet.authorized_students?.includes(studentId)) {
+      return res.status(403).json({
+        error: 'Not authorized to access this worksheet. Please consult your teacher.',
+      })
+    }
+
+    // 🔒 Step 3: Check if already submitted
     const { data: existing, error: checkError } = await supabase
       .from('scores')
       .select('id')
@@ -63,14 +55,19 @@ export default async function handler(req, res) {
       return res.status(409).json({ error: 'You have already submitted this worksheet.' })
     }
 
-    // ✅ 3. Insert new submission
-    const { error } = await supabase.from('scores').insert([
-      { name, worksheet_id: worksheetId, student_id: studentId, score }
+    // ✅ Step 4: Insert score
+    const { error: insertError } = await supabase.from('scores').insert([
+      {
+        name,
+        worksheet_id: worksheetId,
+        student_id: studentId,
+        score,
+      },
     ])
 
-    if (error) {
-      console.error('POST error:', error.message)
-      return res.status(500).json({ error: error.message })
+    if (insertError) {
+      console.error('Insert error:', insertError.message)
+      return res.status(500).json({ error: insertError.message })
     }
 
     return res.status(200).json({ success: true })
