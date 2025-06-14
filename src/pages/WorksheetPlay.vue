@@ -16,25 +16,6 @@ const questions = ref<any[]>([])
 const copyright = ref<string | null>(null)
 const loading = ref(true)
 
-const fetchQuestions = async () => {
-  const { data, error } = await supabase
-    .from('worksheets')
-    .select('questions, copyright')
-    .eq('worksheet_id', worksheetId)
-    .single()
-
-  if (error || !data) {
-    alert('Worksheet not found')
-    console.error(error)
-    return
-  }
-
-  questions.value = data.questions
-  selectedAnswers.value = Array(data.questions.length).fill(null)
-  copyright.value = data.copyright || null
-  loading.value = false
-}
-
 const authorizedStudentIds = ref<string[]>([])
 
 const fetchQuestions = async () => {
