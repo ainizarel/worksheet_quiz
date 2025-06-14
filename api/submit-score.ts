@@ -1,12 +1,17 @@
+import { VercelRequest, VercelResponse } from '@vercel/node';
 import { createClient } from '@supabase/supabase-js';
+
+console.log('SUPABASE_URL:', process.env.SUPABASE_URL);
+console.log('SUPABASE_ANON_KEY:', process.env.SUPABASE_ANON_KEY);
 
 const supabase = createClient(
   process.env.SUPABASE_URL!,
   process.env.SUPABASE_ANON_KEY!
 );
 
-export default async function handler(req: Request): Promise<Response> {
-  const url = new URL(req.url);
+export default async function handler(req: VercelRequest, res: VercelResponse) {
+  console.log('Request method:', req.method);
+  console.log('Request body:', req.body);
 
   if (req.method === 'GET') {
     const { data, error } = await supabase
@@ -15,27 +20,21 @@ export default async function handler(req: Request): Promise<Response> {
       .order('created_at', { ascending: false });
 
     if (error) {
-      return new Response(JSON.stringify({ error: error.message }), {
-        status: 500,
-        headers: { 'Content-Type': 'application/json' }
-      });
+      console.error('Supabase GET error:', error.message);
+      return res.status(500).json({ error: error.message });
     }
 
-    return new Response(JSON.stringify(data), {
-      status: 200,
-      headers: { 'Content-Type': 'application/json' }
-    });
+    return res.status(200).json(data);
   }
 
   if (req.method === 'POST') {
-    const body = await req.json();
-    const { name, worksheetId, score } = body;
+    const { name, worksheetId, score } = req.body;
+
+    console.log('POST data:', { name, worksheetId, score });
 
     if (!name || !worksheetId || score === undefined) {
-      return new Response(JSON.stringify({ error: 'Missing fields' }), {
-        status: 400,
-        headers: { 'Content-Type': 'application/json' }
-      });
+      console.warn('Missing fields in POST data');
+      return res.status(400).json({ error: 'Missing fields' });
     }
 
     const { error } = await supabase.from('scores').insert([
@@ -43,20 +42,13 @@ export default async function handler(req: Request): Promise<Response> {
     ]);
 
     if (error) {
-      return new Response(JSON.stringify({ error: error.message }), {
-        status: 500,
-        headers: { 'Content-Type': 'application/json' }
-      });
+      console.error('Supabase INSERT error:', error.message);
+      return res.status(500).json({ error: error.message });
     }
 
-    return new Response(JSON.stringify({ success: true }), {
-      status: 200,
-      headers: { 'Content-Type': 'application/json' }
-    });
+    return res.status(200).json({ success: true });
   }
 
-  return new Response(JSON.stringify({ error: 'Method not allowed' }), {
-    status: 405,
-    headers: { 'Content-Type': 'application/json' }
-  });
+  console.warn('Method not allowed');
+  return res.status(405).json({ error: 'Method not allowed' });
 }
