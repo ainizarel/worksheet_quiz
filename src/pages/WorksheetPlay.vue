@@ -1,3 +1,98 @@
+<template>
+  <div class="max-w-3xl mx-auto p-4">
+    <h1 class="text-2xl font-bold mb-4">Worksheet: {{ worksheetId }}</h1>
+
+    <div v-if="loading">Loading questions...</div>
+    <div v-else>
+
+      <!-- Student ID Input -->
+      <div class="mb-4">
+        <label for="studentId" class="block font-semibold mb-1">Student ID:</label>
+        <input
+          id="studentId"
+          v-model="studentId"
+          class="border px-3 py-2 w-full rounded-lg"
+          placeholder="Enter your student ID"
+        />
+      </div>
+
+      <!-- Name Input -->
+      <div class="mb-4">
+        <label for="name" class="block font-semibold mb-1">Your Name:</label>
+        <input 
+          id="name" 
+          v-model="name" 
+          class="border px-3 py-2 w-full rounded-lg" 
+          placeholder="Enter your name" 
+        />
+      </div>
+
+      <!-- Questions and Options without Card -->
+      <div v-for="(q, i) in questions" :key="i" class="mb-6">
+        <!-- Container for each question -->
+        <div class="question-container p-4 mb-4 border rounded-lg">
+          <p class="font-medium text-lg">{{ i + 1 }}. {{ q.question }}</p>
+
+          <!-- Options -->
+          <div class="ml-4">
+            <label
+              v-for="(opt, j) in q.options"
+              :key="j"
+              class="block text-base mt-2"
+              :class="{
+                'text-green-600 font-semibold': submitted && opt[0] === q.answer,
+                'text-red-500': submitted && selectedAnswers[i] === opt[0] && opt[0] !== q.answer
+              }"
+            >
+              <input
+                type="radio"
+                :name="`q${i}`"
+                :value="opt[0]"
+                v-model="selectedAnswers[i]"
+                class="mr-2"
+                :disabled="submitted"
+              />
+              <span :class="{
+                'text-green-600': submitted && opt[0] === q.answer,
+                'text-red-500': submitted && selectedAnswers[i] === opt[0] && opt[0] !== q.answer
+              }">
+                {{ opt }}
+              </span>
+            </label>
+          </div>
+        </div>
+      </div>
+
+      <!-- Submit and Reset Buttons -->
+      <div v-if="!submitted" class="mt-6 flex gap-4">
+        <button 
+          @click="submit" 
+          class="submit-btn"
+        >
+          Submit
+        </button>
+        <button 
+          @click="reset" 
+          class="reset-btn"
+        >
+          Reset
+        </button>
+      </div>
+
+      <!-- Score Display -->
+      <div v-if="submitted" class="mt-6">
+        <p class="text-lg font-bold">Score: <span class="text-green-600">{{ score }} / {{ questions.length }}</span></p>
+      </div>
+
+      <!-- Copyright Section -->
+      <div v-if="copyright" class="mt-4 text-sm text-gray-500">
+        © {{ copyright }}
+      </div>
+
+    </div>
+  </div>
+</template>
+
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
@@ -106,76 +201,77 @@ const submit = async () => {
   }
 };
 
-
-
 onMounted(fetchQuestions)
 </script>
 
+<style scoped>
+/* Styling for question container (previously Card) */
+.question-container {
+  cursor: pointer;
+  width: 100%;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  padding: 16px;
+  background-color: #f4ee8a61;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  transition: transform 0.3s ease, background-color 0.3s ease;
+}
 
-<template>
-  <div class="max-w-3xl mx-auto p-4">
-    <h1 class="text-2xl font-bold mb-4">Worksheet: {{ worksheetId }}</h1>
+/* Hover effect applied when the question container is hovered */
+.question-container:hover {
+  transform: scale(1.05);
+  background-color: rgba(244, 238, 138, 0.75); /* Adjust background on hover */
+}
 
-    <div v-if="loading">Loading questions...</div>
-    <div v-else>
+/* Multiple choice answer styles */
+input[type="radio"]:checked + label {
+  font-weight: bold;
+}
 
-    <div class="mb-4">
-      <label for="studentId" class="block font-semibold mb-1">Student ID:</label>
-      <input
-        id="studentId"
-        v-model="studentId"
-        class="border px-2 py-1 w-full rounded"
-        placeholder="Enter your student ID"
-      />
-    </div>
+input[type="radio"]:checked + label span {
+  color: green; /* Correct answer is green */
+}
 
-      <div class="mb-4">
-        <label for="name" class="block font-semibold mb-1">Your Name:</label>
-        <input id="name" v-model="name" class="border px-2 py-1 w-full rounded" placeholder="Enter your name" />
-      </div>
+input[type="radio"]:not(:checked) + label span {
+  color: red; /* Incorrect answers are red */
+}
 
-        <div v-for="(q, i) in questions" :key="i" class="mb-4">
-        <p class="font-medium">{{ i + 1 }}. {{ q.question }}</p>
-        <div class="ml-4">
-           <label
-                v-for="(opt, j) in q.options"
-                :key="j"
-                class="block"
-                :class="{
-                    'text-green-600 font-semibold': submitted && opt[0] === q.answer,
-                    'text-red-500': submitted && selectedAnswers[i] === opt[0] && opt[0] !== q.answer
-                }"
-                >
-                <input
-                    type="radio"
-                    :name="`q${i}`"
-                    :value="opt[0]"
-                    v-model="selectedAnswers[i]"
-                    class="mr-2"
-                    :disabled="submitted"
-                />
-                {{ opt }}
-                </label>
+/* Radio button hover effect */
+input[type="radio"]:hover + label span {
+  text-decoration: underline;
+}
 
-        </div>
-        </div>
+/* Button styling */
+.submit-btn, .reset-btn {
+  cursor: pointer;
+  padding: 12px 20px;
+  border-radius: 8px;
+  font-size: 16px;
+  width: 140px;
+  transition: background-color 0.3s ease;
+}
 
+.submit-btn {
+  background-color: #38a169; /* Green background */
+  color: white;
+}
 
-        <div v-if="!submitted" class="mt-6 flex gap-4">
-        <button @click="submit" class="bg-green-600 text-white px-4 py-2 rounded">Submit</button>
-        <button @click="reset" class="bg-gray-400 text-white px-4 py-2 rounded">Reset</button>
-        </div>
+.submit-btn:hover {
+  background-color: #2f855a; /* Slightly darker green on hover */
+}
 
+.reset-btn {
+  background-color: #4a5568; /* Gray background */
+  color: white;
+}
 
-      <div v-if="submitted" class="mt-6">
-        <p class="text-lg font-bold">Score: {{ score }} / {{ questions.length }}</p>
-      </div>
+.reset-btn:hover {
+  background-color: #2d3748; /* Darker gray on hover */
+}
 
-    <div v-if="copyright" class="mt-2 text-sm text-gray-500">
-    © {{ copyright }}
-    </div>
-
-    </div>
-  </div>
-</template>
-
+/* Add focus effect for accessibility */
+.submit-btn:focus, .reset-btn:focus {
+  outline: 2px solid #cbd5e0;
+  outline-offset: 2px;
+}
+</style>
