@@ -21,7 +21,8 @@
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import Card from 'primevue/card'
-import { supabase } from '@/lib/supabase'
+import supabase from '@/lib/supabase'
+
 
 const router = useRouter()
 const worksheets = ref<any[]>([])
