@@ -47,6 +47,16 @@ const submit = async () => {
     return
   }
 
+  // ✅ Find all unanswered question indexes
+  const unanswered = selectedAnswers.value
+    .map((ans, idx) => (ans === null ? idx + 1 : null))
+    .filter(idx => idx !== null)
+
+  if (unanswered.length > 0) {
+    alert(`Please answer all questions before submitting.\nUnanswered: ${unanswered.join(', ')}`)
+    return
+  }
+
   const correct = selectedAnswers.value.reduce((count, ans, idx) => {
     return count + (ans === questions.value[idx].answer ? 1 : 0)
   }, 0)
@@ -66,6 +76,7 @@ const submit = async () => {
   }
 }
 
+
 onMounted(fetchQuestions)
 </script>
 
@@ -81,26 +92,38 @@ onMounted(fetchQuestions)
         <input id="name" v-model="name" class="border px-2 py-1 w-full rounded" placeholder="Enter your name" />
       </div>
 
-      <div v-for="(q, i) in questions" :key="i" class="mb-4">
+        <div v-for="(q, i) in questions" :key="i" class="mb-4">
         <p class="font-medium">{{ i + 1 }}. {{ q.question }}</p>
         <div class="ml-4">
-          <label v-for="(opt, j) in q.options" :key="j" class="block">
-            <input
-              type="radio"
-              :name="`q${i}`"
-              :value="opt[0]"
-              v-model="selectedAnswers[i]"
-              class="mr-2"
-            />
-            {{ opt }}
-          </label>
-        </div>
-      </div>
+           <label
+                v-for="(opt, j) in q.options"
+                :key="j"
+                class="block"
+                :class="{
+                    'text-green-600 font-semibold': submitted && opt[0] === q.answer,
+                    'text-red-500': submitted && selectedAnswers[i] === opt[0] && opt[0] !== q.answer
+                }"
+                >
+                <input
+                    type="radio"
+                    :name="`q${i}`"
+                    :value="opt[0]"
+                    v-model="selectedAnswers[i]"
+                    class="mr-2"
+                    :disabled="submitted"
+                />
+                {{ opt }}
+                </label>
 
-      <div class="mt-6 flex gap-4">
+        </div>
+        </div>
+
+
+        <div v-if="!submitted" class="mt-6 flex gap-4">
         <button @click="submit" class="bg-green-600 text-white px-4 py-2 rounded">Submit</button>
         <button @click="reset" class="bg-gray-400 text-white px-4 py-2 rounded">Reset</button>
-      </div>
+        </div>
+
 
       <div v-if="submitted" class="mt-6">
         <p class="text-lg font-bold">Score: {{ score }} / {{ questions.length }}</p>
