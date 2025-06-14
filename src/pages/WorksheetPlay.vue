@@ -67,6 +67,11 @@
         <button @click="reset" class="reset-btn">Reset</button>
       </div>
 
+      <!-- View Leaderboard Button (only shows after submit) -->
+      <div v-if="submitted" class="button-container">
+        <button @click="viewLeaderboard" class="view-leaderboard-btn">View Leaderboard</button>
+      </div>
+
       <!-- Score Display -->
       <div v-if="submitted" class="score-display">
         <p class="score">Score: {{ score }} / {{ questions.length }}</p>
@@ -188,6 +193,18 @@ const submit = async () => {
   }
 };
 
+// Function to handle leaderboard view (You can implement navigation or modal here)
+const viewLeaderboard = () => {
+  toast.add({
+    severity: 'info',
+    summary: 'Leaderboard',
+    detail: 'Navigating to Leaderboard...',
+    life: 3000,
+  });
+  // You can navigate to the leaderboard page here if you have one:
+  // router.push('/leaderboard');
+};
+
 onMounted(fetchQuestions)
 </script>
 
@@ -304,7 +321,7 @@ onMounted(fetchQuestions)
   gap: 20px;
 }
 
-.submit-btn, .reset-btn {
+.submit-btn, .reset-btn, .view-leaderboard-btn {
   padding: 12px 20px;
   border-radius: 8px;
   font-size: 16px;
@@ -328,6 +345,15 @@ onMounted(fetchQuestions)
 
 .reset-btn:hover {
   background-color:rgb(56, 64, 79);
+}
+
+.view-leaderboard-btn {
+  background-color: #3182ce;
+  color: white;
+}
+
+.view-leaderboard-btn:hover {
+  background-color: #2563eb;
 }
 
 /* Score and copyright styles */
