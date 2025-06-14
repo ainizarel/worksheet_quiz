@@ -46,32 +46,23 @@ const reset = () => {
 }
 
 const submit = async () => {
-  if (!name.value.trim() || !studentId.value.trim()) {
-    alert('Please enter your name and student ID');
-    return;
-  }
-
-  // 🔒 Check if student ID is in authorized list
-  if (!authorizedStudentIds.value.includes(studentId.value.trim())) {
-    alert('You are not in the authorized student list. Please consult the teacher or admin.');
-    return;
+  if (!name.value.trim()) {
+    alert('Please enter your name')
+    return
   }
 
   const unanswered = selectedAnswers.value
     .map((ans, idx) => (ans === null ? idx + 1 : null))
-    .filter(idx => idx !== null);
+    .filter(idx => idx !== null)
 
   if (unanswered.length > 0) {
-    alert(`Please answer all questions before submitting.\nUnanswered: ${unanswered.join(', ')}`);
-    return;
+    alert(`Please answer all questions before submitting.\nUnanswered: ${unanswered.join(', ')}`)
+    return
   }
 
   const correct = selectedAnswers.value.reduce((count, ans, idx) => {
-    return count + (ans === questions.value[idx].answer ? 1 : 0);
-  }, 0);
-
-  score.value = correct;
-  submitted.value = true;
+    return count + (ans === questions.value[idx].answer ? 1 : 0)
+  }, 0)
 
   try {
     await submitScore({
@@ -79,14 +70,22 @@ const submit = async () => {
       worksheetId,
       score: correct,
       studentId: studentId.value,
-    });
+    })
+
+    submitted.value = true
+    score.value = correct
+
   } catch (err: any) {
-    console.error('Submit failed:', err.message);
-    alert('Submission failed: ' + err.message);
+    if (err.message === 'You have already submitted this worksheet.') {
+      alert('❌ This student ID has already submitted this worksheet. Only one attempt is allowed.')
+    } else if (err.message === 'Not authorized to access this worksheet. Please consult your teacher.') {
+      alert('⚠️ Your student ID is not authorized to access this worksheet. Please consult your teacher.')
+    } else {
+      alert('Submission failed: ' + err.message)
+    }
+    console.error('Submit failed:', err.message)
   }
-};
-
-
+}
 
 onMounted(fetchQuestions)
 </script>
