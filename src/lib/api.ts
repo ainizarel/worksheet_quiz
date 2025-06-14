@@ -7,6 +7,7 @@ export async function submitScore(payload: {
   name: string;
   worksheetId: string;
   score: number;
+  studentId: string;
 }) {
   const response = await fetch(`${baseURL}/api/submit-score`, {
     method: 'POST',
