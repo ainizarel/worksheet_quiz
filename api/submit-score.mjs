@@ -1,5 +1,5 @@
+// ✅ FIXED VERSION: submit-score.mjs
 import { createClient } from '@supabase/supabase-js';
-import type { VercelRequest, VercelResponse } from '@vercel/node';
 
 // Create Supabase client using environment variables
 const supabase = createClient(
@@ -7,7 +7,7 @@ const supabase = createClient(
   process.env.SUPABASE_ANON_KEY || ''
 );
 
-export default async function handler(req: VercelRequest, res: VercelResponse) {
+export default async function handler(req, res) {
   console.log('Incoming request method:', req.method);
 
   if (req.method === 'GET') {
