@@ -4,7 +4,7 @@ import App from './App.vue'
 import router from './router'
 
 import PrimeVue from 'primevue/config'
-import 'primevue/resources/themes/lara-light-blue/theme.css' // ✅ Theme
+import 'primevue/resources/themes/saga-blue/theme.css'; // Saga Blue theme // ✅ Theme
 import 'primevue/resources/primevue.min.css'                 // ✅ Core styles
 import 'primeicons/primeicons.css'                           // ✅ Icons
 import 'primeflex/primeflex.css'                             // ✅ Utility CSS
