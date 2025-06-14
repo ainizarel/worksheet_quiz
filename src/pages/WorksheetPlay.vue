@@ -35,6 +35,28 @@ const fetchQuestions = async () => {
   loading.value = false
 }
 
+const authorizedStudentIds = ref<string[]>([])
+
+const fetchQuestions = async () => {
+  const { data, error } = await supabase
+    .from('worksheets')
+    .select('questions, copyright, authorized_students')
+    .eq('worksheet_id', worksheetId)
+    .single()
+
+  if (error || !data) {
+    alert('Worksheet not found')
+    console.error(error)
+    return
+  }
+
+  questions.value = data.questions
+  authorizedStudentIds.value = data.authorized_students || []
+  selectedAnswers.value = Array(data.questions.length).fill(null)
+  copyright.value = data.copyright || null
+  loading.value = false
+}
+
 const reset = () => {
   selectedAnswers.value = Array(questions.value.length).fill(null)
   name.value = ''
@@ -44,26 +66,31 @@ const reset = () => {
 
 const submit = async () => {
   if (!name.value.trim() || !studentId.value.trim()) {
-    alert('Please enter your name and student ID')
-    return
+    alert('Please enter your name and student ID');
+    return;
   }
 
-  // ✅ Find all unanswered question indexes
+  // 🔒 Check if student ID is in authorized list
+  if (!authorizedStudentIds.value.includes(studentId.value.trim())) {
+    alert('You are not in the authorized student list. Please consult the teacher or admin.');
+    return;
+  }
+
   const unanswered = selectedAnswers.value
     .map((ans, idx) => (ans === null ? idx + 1 : null))
-    .filter(idx => idx !== null)
+    .filter(idx => idx !== null);
 
   if (unanswered.length > 0) {
-    alert(`Please answer all questions before submitting.\nUnanswered: ${unanswered.join(', ')}`)
-    return
+    alert(`Please answer all questions before submitting.\nUnanswered: ${unanswered.join(', ')}`);
+    return;
   }
 
   const correct = selectedAnswers.value.reduce((count, ans, idx) => {
-    return count + (ans === questions.value[idx].answer ? 1 : 0)
-  }, 0)
+    return count + (ans === questions.value[idx].answer ? 1 : 0);
+  }, 0);
 
-  score.value = correct
-  submitted.value = true
+  score.value = correct;
+  submitted.value = true;
 
   try {
     await submitScore({
@@ -71,12 +98,13 @@ const submit = async () => {
       worksheetId,
       score: correct,
       studentId: studentId.value,
-    })
+    });
   } catch (err: any) {
-    console.error('Submit failed:', err.message)
-    alert('Submission failed: ' + err.message)
+    console.error('Submit failed:', err.message);
+    alert('Submission failed: ' + err.message);
   }
-}
+};
+
 
 
 onMounted(fetchQuestions)
