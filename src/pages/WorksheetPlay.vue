@@ -38,7 +38,7 @@
               'option-selected': selectedAnswers[i] === opt[0], 
               'option-correct': submitted && selectedAnswers[i] === q.answer && selectedAnswers[i] !== null, 
               'option-wrong': submitted && selectedAnswers[i] !== q.answer && selectedAnswers[i] !== null,
-              'option-real-correct': submitted && opt[0] === q.answer && selectedAnswers[i] !== q.answer // Real correct option
+              'option-real-correct': submitted && opt[0] === q.answer && selectedAnswers[i] !== q.answer && selectedAnswers[i] !== null // Only highlight real correct answer when user chooses the wrong one
             }"
             @click="selectedAnswers[i] = opt[0]"
           >
@@ -57,9 +57,16 @@
             }">
               {{ opt }}
             </span>
+
+            <!-- Icon for correct answer (only shown if answer is wrong and the option is correct) -->
+            <span v-if="submitted && opt[0] === q.answer && selectedAnswers[i] !== q.answer" class="correct-icon">
+              ✔️
+            </span>
           </div>
         </div>
       </div>
+
+
 
       <!-- Submit and Reset Buttons -->
       <div v-if="!submitted" class="button-container">
@@ -91,6 +98,9 @@ import { useRoute } from 'vue-router'
 import { submitScore } from '@/lib/api'
 import supabase from '@/lib/supabase'
 import { useToast } from 'primevue/usetoast'
+import { useRouter } from 'vue-router'
+
+const router = useRouter()  // Initialize the router
 
 const toast = useToast()
 
@@ -98,11 +108,11 @@ const route = useRoute()
 const worksheetId = route.params.id as string
 
 const name = ref('')
-const studentId = ref('');
+const studentId = ref('')
 const submitted = ref(false)
 const score = ref<number | null>(null)
-const selectedAnswers = ref<(string | null)[]>([])  // Correct answer options stored here
-const questions = ref<any[]>([])  // Questions data
+const selectedAnswers = ref<(string | null)[]>([])
+const questions = ref<any[]>([])
 const copyright = ref<string | null>(null)
 const loading = ref(true)
 
@@ -123,7 +133,7 @@ const fetchQuestions = async () => {
 
   questions.value = data.questions
   authorizedStudentIds.value = data.authorized_students || []
-  selectedAnswers.value = Array(data.questions.length).fill(null)  // Ensure answers array length matches questions
+  selectedAnswers.value = Array(data.questions.length).fill(null)
   copyright.value = data.copyright || null
   loading.value = false
 }
@@ -142,13 +152,13 @@ const submit = async () => {
       summary: 'Missing Name',
       detail: 'Please enter your name',
       life: 3000,
-    });
-    return;
+    })
+    return
   }
 
   const unanswered = selectedAnswers.value
     .map((ans, idx) => (ans === null ? idx + 1 : null))
-    .filter(idx => idx !== null);
+    .filter((idx) => idx !== null)
 
   if (unanswered.length > 0) {
     toast.add({
@@ -156,13 +166,13 @@ const submit = async () => {
       summary: 'Incomplete Answers',
       detail: `Please answer all questions. Unanswered: ${unanswered.join(', ')}`,
       life: 5000,
-    });
-    return;
+    })
+    return
   }
 
   const correct = selectedAnswers.value.reduce((count, ans, idx) => {
-    return count + (ans === questions.value[idx].answer ? 1 : 0);
-  }, 0);
+    return count + (ans === questions.value[idx].answer ? 1 : 0)
+  }, 0)
 
   try {
     await submitScore({
@@ -170,30 +180,29 @@ const submit = async () => {
       worksheetId,
       score: correct,
       studentId: studentId.value,
-    });
+    })
 
-    submitted.value = true;
-    score.value = correct;
+    submitted.value = true
+    score.value = correct
 
     toast.add({
       severity: 'success',
       summary: 'Submitted',
       detail: `You scored ${correct} / ${questions.value.length}`,
       life: 4000,
-    });
-
+    })
   } catch (err: any) {
     toast.add({
       severity: 'error',
       summary: 'Submission Failed',
       detail: err.message || 'Unexpected error occurred',
       life: 5000,
-    });
-    console.error('Submit failed:', err.message);
+    })
+    console.error('Submit failed:', err.message)
   }
-};
+}
 
-// Function to handle leaderboard view (You can implement navigation or modal here)
+// Function to navigate to leaderboard page
 const viewLeaderboard = () => {
   toast.add({
     severity: 'info',
@@ -201,9 +210,13 @@ const viewLeaderboard = () => {
     detail: 'Navigating to Leaderboard...',
     life: 3000,
   });
-  // You can navigate to the leaderboard page here if you have one:
-  // router.push('/leaderboard');
+
+  const url = '/leaderboard';  // The URL to navigate to the leaderboard
+
+  // Open the leaderboard in a new tab with specified dimensions
+  window.open(url, '_blank', 'width=800,height=600');  // Adjust width and height as needed
 };
+
 
 onMounted(fetchQuestions)
 </script>
@@ -299,9 +312,14 @@ onMounted(fetchQuestions)
 
 /* Real correct option styles (the actual correct answer) */
 .option-real-correct {
-  background-color: #38a169; /* Green for the correct option */
+  background-color: #38a169; /* Green for the real correct answer */
   color: white;
   font-weight: bold;
+}
+
+.correct-icon {
+  margin-left: 8px;
+  color: green;
 }
 
 /* Selected option background */

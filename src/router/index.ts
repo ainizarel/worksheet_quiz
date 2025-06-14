@@ -1,15 +1,17 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import Home from '../pages/Home.vue'
 import WorksheetPlay from '../pages/WorksheetPlay.vue'
-import LeaderboardTop from '../pages/LeaderboardTop.vue' // Import Leaderboard component
+import Leaderboard from '../pages/Leaderboard.vue' // Import the leaderboard component
 
 const routes = [
-  { path: '/', component: Home }, // Home page route
-  { path: '/worksheet/:id/play', component: WorksheetPlay }, // WorksheetPlay route
-  { path: '/leaderboard', component: LeaderboardTop }, // Leaderboard route
+  { path: '/', component: Home },
+  { path: '/worksheet/:id/play', component: WorksheetPlay },
+  { path: '/leaderboard', component: Leaderboard }, // The leaderboard route
 ]
 
-export default createRouter({
+const router = createRouter({
   history: createWebHistory(),
   routes
 })
+
+export default router
