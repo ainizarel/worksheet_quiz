@@ -51,7 +51,6 @@ const submit = async () => {
     return;
   }
 
-  // Check unanswered questions
   const unanswered = selectedAnswers.value
     .map((ans, idx) => (ans === null ? idx + 1 : null))
     .filter(idx => idx !== null);
@@ -77,17 +76,9 @@ const submit = async () => {
     score.value = correct;
 
   } catch (err: any) {
-    const message = err.message;
-
-    if (message.includes('already submitted')) {
-      alert('❌ You have already submitted this worksheet. You can only submit once.');
-    } else if (message.includes('Not authorized')) {
-      alert('⚠️ You are not in the authorized student list. Please consult your teacher/admin.');
-    } else {
-      alert('❌ Submission failed: ' + message);
-    }
-
-    console.error('Submit failed:', message);
+    // Show the actual error message returned from the backend
+    alert(`❌ Submission failed: ${err.message}`);
+    console.error('Submit failed:', err.message);
   }
 };
 
