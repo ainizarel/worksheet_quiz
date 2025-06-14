@@ -36,8 +36,9 @@
             class="option"
             :class="{
               'option-selected': selectedAnswers[i] === opt[0], 
-              'option-correct': submitted && selectedAnswers[i] === q.answer, 
-              'option-wrong': submitted && selectedAnswers[i] !== q.answer && selectedAnswers[i] !== null
+              'option-correct': submitted && selectedAnswers[i] === q.answer && selectedAnswers[i] !== null, 
+              'option-wrong': submitted && selectedAnswers[i] !== q.answer && selectedAnswers[i] !== null,
+              'option-real-correct': submitted && opt[0] === q.answer && selectedAnswers[i] !== q.answer // Real correct option
             }"
             @click="selectedAnswers[i] = opt[0]"
           >
@@ -275,6 +276,13 @@ onMounted(fetchQuestions)
 /* Wrong answer styles */
 .option-wrong {
   background-color: #e53e3e; /* Red for incorrect answers */
+  color: white;
+  font-weight: bold;
+}
+
+/* Real correct option styles (the actual correct answer) */
+.option-real-correct {
+  background-color: #38a169; /* Green for the correct option */
   color: white;
   font-weight: bold;
 }
