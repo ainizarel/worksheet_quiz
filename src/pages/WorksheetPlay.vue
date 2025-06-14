@@ -8,6 +8,7 @@ const route = useRoute()
 const worksheetId = route.params.id as string
 
 const name = ref('')
+const studentId = ref('');
 const submitted = ref(false)
 const score = ref<number | null>(null)
 const selectedAnswers = ref<(string | null)[]>([])
@@ -42,8 +43,8 @@ const reset = () => {
 }
 
 const submit = async () => {
-  if (!name.value.trim()) {
-    alert('Please enter your name')
+  if (!name.value.trim() || !studentId.value.trim()) {
+    alert('Please enter your name and student ID')
     return
   }
 
@@ -68,7 +69,8 @@ const submit = async () => {
     await submitScore({
       name: name.value,
       worksheetId,
-      score: correct
+      score: correct,
+      studentId: studentId.value,
     })
   } catch (err: any) {
     console.error('Submit failed:', err.message)
@@ -87,6 +89,17 @@ onMounted(fetchQuestions)
 
     <div v-if="loading">Loading questions...</div>
     <div v-else>
+
+    <div class="mb-4">
+      <label for="studentId" class="block font-semibold mb-1">Student ID:</label>
+      <input
+        id="studentId"
+        v-model="studentId"
+        class="border px-2 py-1 w-full rounded"
+        placeholder="Enter your student ID"
+      />
+    </div>
+
       <div class="mb-4">
         <label for="name" class="block font-semibold mb-1">Your Name:</label>
         <input id="name" v-model="name" class="border px-2 py-1 w-full rounded" placeholder="Enter your name" />
