@@ -1,5 +1,14 @@
 <!-- src/pages/Home.vue -->
 <template>
+  <div class="flex justify-center items-center h-screen bg-white">
+    <!-- Animated SVG -->
+    <img
+      src="@/assets/logo.svg"
+      alt="Worksheet Logo"
+      class="w-40 h-40 animate-bounce"
+    />
+  </div>
+  
   <div class="p-d-flex p-jc-center p-ai-center flex-wrap gap-4 p-4" style="min-height: 100vh">
     <Card
       v-for="worksheet in worksheets"
