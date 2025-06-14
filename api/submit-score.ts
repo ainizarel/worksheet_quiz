@@ -1,5 +1,3 @@
-// api/submit-score.ts
-import { VercelRequest, VercelResponse } from '@vercel/node';
 import { createClient } from '@supabase/supabase-js';
 
 const supabase = createClient(
@@ -7,7 +5,9 @@ const supabase = createClient(
   process.env.SUPABASE_ANON_KEY!
 );
 
-export default async function handler(req: VercelRequest, res: VercelResponse) {
+export default async function handler(req: Request): Promise<Response> {
+  const url = new URL(req.url);
+
   if (req.method === 'GET') {
     const { data, error } = await supabase
       .from('scores')
@@ -15,17 +15,27 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       .order('created_at', { ascending: false });
 
     if (error) {
-      return res.status(500).json({ error: error.message });
+      return new Response(JSON.stringify({ error: error.message }), {
+        status: 500,
+        headers: { 'Content-Type': 'application/json' }
+      });
     }
 
-    return res.status(200).json(data);
+    return new Response(JSON.stringify(data), {
+      status: 200,
+      headers: { 'Content-Type': 'application/json' }
+    });
   }
 
   if (req.method === 'POST') {
-    const { name, worksheetId, score } = req.body;
+    const body = await req.json();
+    const { name, worksheetId, score } = body;
 
     if (!name || !worksheetId || score === undefined) {
-      return res.status(400).json({ error: 'Missing fields' });
+      return new Response(JSON.stringify({ error: 'Missing fields' }), {
+        status: 400,
+        headers: { 'Content-Type': 'application/json' }
+      });
     }
 
     const { error } = await supabase.from('scores').insert([
@@ -33,11 +43,20 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     ]);
 
     if (error) {
-      return res.status(500).json({ error: error.message });
+      return new Response(JSON.stringify({ error: error.message }), {
+        status: 500,
+        headers: { 'Content-Type': 'application/json' }
+      });
     }
 
-    return res.status(200).json({ success: true });
+    return new Response(JSON.stringify({ success: true }), {
+      status: 200,
+      headers: { 'Content-Type': 'application/json' }
+    });
   }
 
-  return res.status(405).json({ error: 'Method not allowed' });
+  return new Response(JSON.stringify({ error: 'Method not allowed' }), {
+    status: 405,
+    headers: { 'Content-Type': 'application/json' }
+  });
 }
