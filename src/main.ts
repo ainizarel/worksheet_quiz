@@ -10,6 +10,8 @@ import 'primeicons/primeicons.css'                           // ✅ Icons
 import 'primeflex/primeflex.css'                             // ✅ Utility CSS
 import ToastService from 'primevue/toastservice';
 import Toast from 'primevue/toast';
+import 'font-awesome/css/font-awesome.min.css';
+
 
 const app = createApp(App);
 
