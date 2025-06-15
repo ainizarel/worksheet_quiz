@@ -28,38 +28,48 @@
 
       <!-- Questions and Options -->
       <div v-for="(q, i) in questions" :key="i" class="question-container">
-        <p class="question">{{ i + 1 }}. {{ q.question }}</p>
-        <div class="options-container">
-          <div
-            v-for="(opt, j) in q.options"
-            :key="j"
-            class="option"
-            :class="{
-              'option-selected': selectedAnswers[i] === opt[0], 
-              'option-correct': submitted && selectedAnswers[i] === q.answer && selectedAnswers[i] !== null, 
-              'option-wrong': submitted && selectedAnswers[i] !== q.answer && selectedAnswers[i] !== null,
-              'option-real-correct': submitted && opt[0] === q.answer && selectedAnswers[i] !== q.answer // Real correct option
-            }"
-            @click="selectedAnswers[i] = opt[0]"
-          >
-            <input
-              type="radio"
-              :name="`q${i}`"
-              :value="opt[0]"
-              v-model="selectedAnswers[i]"
-              class="radio-button"
-              :disabled="submitted"
-              hidden
-            />
-            <span :class="{
-              'selected-option': selectedAnswers[i] === opt[0],
-              'hover-option': !selectedAnswers[i] && !submitted
-            }">
-              {{ opt }}
-            </span>
+          <p class="question">{{ i + 1 }}. {{ q.question }}</p>
+          <div class="options-container">
+            <div
+              v-for="(opt, j) in q.options"
+              :key="j"
+              class="option"
+              :class="{
+                'option-selected': selectedAnswers[i] === opt[0], 
+                'option-correct': submitted && selectedAnswers[i] === q.answer && selectedAnswers[i] !== null, 
+                'option-wrong': submitted && selectedAnswers[i] !== q.answer && selectedAnswers[i] !== null,
+                'option-real-correct': submitted && opt[0] === q.answer && selectedAnswers[i] !== q.answer // Only highlight real correct answer if user answers wrong
+              }"
+              @click="selectedAnswers[i] = opt[0]"
+            >
+              <input
+                type="radio"
+                :name="`q${i}`"
+                :value="opt[0]"
+                v-model="selectedAnswers[i]"
+                class="radio-button"
+                :disabled="submitted"
+                hidden
+              />
+              <span :class="{
+                'selected-option': selectedAnswers[i] === opt[0],
+                'hover-option': !selectedAnswers[i] && !submitted
+              }">
+                {{ opt }}
+              </span>
+
+              <!-- Show a tick icon if the user selects the correct answer -->
+              <span v-if="submitted && selectedAnswers[i] === q.answer" class="correct-icon">
+                ✔️
+              </span>
+              
+              <!-- Show the real correct option when user answers incorrectly -->
+              <span v-if="submitted && opt[0] === q.answer && selectedAnswers[i] !== q.answer" class="real-correct-icon">
+                ✔️
+              </span>
+            </div>
           </div>
         </div>
-      </div>
 
       <!-- Submit and Reset Buttons -->
       <div v-if="!submitted" class="button-container">
@@ -214,20 +224,24 @@ onMounted(fetchQuestions)
 .container {
   max-width: 900px;
   margin: 0 auto;
-  padding: 16px;
+  padding: 20px;
+  background-color: #f7f7f7; /* Light background color */
+  border-radius: 8px;
 }
 
 /* Title style */
 .title {
-  font-size: 24px;
+  font-size: 28px;
   font-weight: bold;
   margin-bottom: 20px;
+  color: #333;
 }
 
 /* Loading text style */
 .loading {
   font-size: 18px;
   color: gray;
+  text-align: center;
 }
 
 /* Input fields */
@@ -236,52 +250,64 @@ onMounted(fetchQuestions)
 }
 
 .input {
-  padding: 10px;
+  padding: 12px;
   width: 100%;
   border-radius: 8px;
   border: 1px solid #ccc;
+  font-size: 16px;
 }
 
 .label {
-  font-size: 16px;
+  font-size: 18px;
   font-weight: 600;
-  margin-bottom: 5px;
+  margin-bottom: 8px;
+  color: #333;
 }
 
 /* Question styles */
 .question-container {
   margin-bottom: 30px;
-  padding: 16px;
+  padding: 20px;
   border: 1px solid #ddd;
   border-radius: 8px;
+  background-color: white;
 }
 
 .question {
-  font-size: 18px;
+  font-size: 20px;
   font-weight: 600;
+  margin-bottom: 10px;
 }
 
+/* Options container */
 .options-container {
   margin-top: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
 }
 
+/* Option styles */
 .option {
-  padding: 8px;
-  margin-bottom: 8px;
+  padding: 12px;
   border-radius: 8px;
   cursor: pointer;
-  transition: background-color 0.3s ease;
+  transition: background-color 0.3s ease, transform 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background-color: #f9f9f9;
 }
 
-/* Hidden radio button */
+.option:hover {
+  background-color: #f0f0f0;
+  transform: scale(1.02);
+}
+
+/* Radio button (hidden but functional) */
 .radio-button {
   visibility: hidden;
   position: absolute;
-}
-
-/* Hover effect */
-.option:hover {
-  background-color: #f0f0f0; /* Light hover effect */
 }
 
 /* Correct answer styles */
@@ -300,14 +326,14 @@ onMounted(fetchQuestions)
 
 /* Real correct option styles (the actual correct answer) */
 .option-real-correct {
-  background-color: #38a169; /* Green for the correct option */
-  color: white;
+  background-color: #f0e68c; /* Light yellow for real correct answer */
+  color: black;
   font-weight: bold;
 }
 
 /* Selected option background */
 .option-selected {
-  background-color: #e2e8f0; /* Selected option gray color */
+  background-color: #e2e8f0; /* Light gray for selected option */
 }
 
 .selected-option {
@@ -315,28 +341,37 @@ onMounted(fetchQuestions)
   color: green; /* Color for selected option */
 }
 
-/* Button styles */
-.button-container {
-  margin-top: 20px;
-  display: flex;
-  gap: 20px;
+.correct-icon {
+  margin-left: 8px;
+  color: green;
+  font-size: 18px;
 }
 
+/* Button container styles */
+.button-container {
+  display: flex;
+  gap: 20px;
+  justify-content: center;
+  margin-top: 20px;
+}
+
+/* Button styles */
 .submit-btn, .reset-btn, .view-leaderboard-btn {
   padding: 12px 20px;
   border-radius: 8px;
   font-size: 16px;
   cursor: pointer;
   transition: background-color 0.3s ease;
+  width: 200px; /* Consistent width for buttons */
 }
 
 .submit-btn {
-  background-color:rgb(56, 135, 161);
+  background-color: rgb(56, 135, 161);
   color: white;
 }
 
 .submit-btn:hover {
-  background-color:rgb(109, 193, 211);
+  background-color: rgb(109, 193, 211);
 }
 
 .reset-btn {
@@ -345,7 +380,7 @@ onMounted(fetchQuestions)
 }
 
 .reset-btn:hover {
-  background-color:rgb(56, 64, 79);
+  background-color: rgb(56, 64, 79);
 }
 
 .view-leaderboard-btn {
@@ -360,11 +395,8 @@ onMounted(fetchQuestions)
 /* Score and copyright styles */
 .score-display {
   margin-top: 20px;
-  font-size: 18px;
-}
-
-.score {
-  font-size: 22px;
+  font-size: 20px;
+  text-align: center;
   font-weight: bold;
   color: green;
 }
@@ -373,5 +405,31 @@ onMounted(fetchQuestions)
   margin-top: 10px;
   font-size: 14px;
   color: #aaa;
+  text-align: center;
+}
+
+/* Responsiveness for mobile screens */
+@media (max-width: 768px) {
+  .container {
+    padding: 10px;
+  }
+
+  .title {
+    font-size: 24px;
+  }
+
+  .option {
+    padding: 10px;
+    font-size: 14px;
+  }
+
+  .button-container {
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .submit-btn, .reset-btn, .view-leaderboard-btn {
+    width: 100%;
+  }
 }
 </style>
