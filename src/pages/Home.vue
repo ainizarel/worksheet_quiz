@@ -122,4 +122,14 @@ function goToWorksheet(id: string) {
 .coral-grey {
   color:rgb(17, 79, 112); /* Coral grey color */
 }
+
+body {
+  font-family: 'Roboto', sans-serif;
+}
+
+/* You can also use it in specific components */
+.my-text {
+  font-family: 'Roboto', sans-serif;
+}
+
 </style>

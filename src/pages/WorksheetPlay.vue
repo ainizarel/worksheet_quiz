@@ -38,7 +38,7 @@
               'option-selected': selectedAnswers[i] === opt[0], 
               'option-correct': submitted && selectedAnswers[i] === q.answer && selectedAnswers[i] !== null, 
               'option-wrong': submitted && selectedAnswers[i] !== q.answer && selectedAnswers[i] !== null,
-              'option-real-correct': submitted && opt[0] === q.answer && selectedAnswers[i] !== q.answer && selectedAnswers[i] !== null // Only highlight real correct answer when user chooses the wrong one
+              'option-real-correct': submitted && opt[0] === q.answer && selectedAnswers[i] !== q.answer // Real correct option
             }"
             @click="selectedAnswers[i] = opt[0]"
           >
@@ -57,16 +57,9 @@
             }">
               {{ opt }}
             </span>
-
-            <!-- Icon for correct answer (only shown if answer is wrong and the option is correct) -->
-            <span v-if="submitted && opt[0] === q.answer && selectedAnswers[i] !== q.answer" class="correct-icon">
-              ✔️
-            </span>
           </div>
         </div>
       </div>
-
-
 
       <!-- Submit and Reset Buttons -->
       <div v-if="!submitted" class="button-container">
@@ -209,14 +202,9 @@ const viewLeaderboard = () => {
     summary: 'Leaderboard',
     detail: 'Navigating to Leaderboard...',
     life: 3000,
-  });
-
-  const url = '/leaderboard';  // The URL to navigate to the leaderboard
-
-  // Open the leaderboard in a new tab with specified dimensions
-  window.open(url, '_blank', 'width=800,height=600');  // Adjust width and height as needed
-};
-
+  })
+  router.push('/leaderboard')  // Navigate to the leaderboard page
+}
 
 onMounted(fetchQuestions)
 </script>
@@ -312,14 +300,9 @@ onMounted(fetchQuestions)
 
 /* Real correct option styles (the actual correct answer) */
 .option-real-correct {
-  background-color: #38a169; /* Green for the real correct answer */
+  background-color: #38a169; /* Green for the correct option */
   color: white;
   font-weight: bold;
-}
-
-.correct-icon {
-  margin-left: 8px;
-  color: green;
 }
 
 /* Selected option background */
